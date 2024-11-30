@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Card Game</title>
+    <style>
+        body {
+            background: url("./pokemon-bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #game-stats {
+    position: absolute;
+    top: 20px;
+    left: 60%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7); /* Black transparent background */
+    padding: 20px; /* Increased padding for more space */
+    border-radius: 10px;
+    color: white;
+    font-size: 18px;
+    height: 620px;
+}
+
+
+        h2 {
+            margin: 10px;
+            display: inline-block;
+        }
+
+        #board {
+            height: 532px;
+            width: 475px;
+            margin: 80px auto;
+            margin-top: 2px;
+            display: flex;
+            flex-wrap: wrap;
+            background-color: whitesmoke;
+            border: 10px solid lightgrey;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+
+        .card {
+            height: 128px;
+            width: 90px;
+            margin: 2.5px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-stats">
+        <h2>Score: <span id="score">0</span></h2>
+        <h2>Errors: <span id="errors">0</span></h2>
+    <div id="board"></div> </div>
+       
+    <script>
+        var score = 0;
+        var errors = 0;
+        var cardList = [
+            "darkness", "double", "fairy", "fighting", 
+            "fire", "grass", "lightning", "metal", 
+            "psychic", "water1"
+        ];
+
+        var cardSet = [];
+        var board = [];
+        var rows = 4;
+        var columns = 5;
+        var card1Selected, card2Selected;
+
+        window.onload = function() {
+            shuffleCards();
+            initializeBoard();
+        }
+
+        function shuffleCards() {
+            cardSet = cardList.concat(cardList); // Duplicate each card for matching
+            for (let i = 0; i < cardSet.length; i++) {
+                let j = Math.floor(Math.random() * cardSet.length);
+                [cardSet[i], cardSet[j]] = [cardSet[j], cardSet[i]]; // Swap elements
+            }
+        }
+
+        function initializeBoard() {
+            for (let r = 0; r < rows; r++) {
+                let row = [];
+                for (let c = 0; c < columns; c++) {
+                    let cardImg = cardSet.pop();
+                    row.push(cardImg);
+
+                    let card = document.createElement("img");
+                    card.id = `${r}-${c}`;
+                    card.src = cardImg + ".jpg";
+                    card.classList.add("card");
+                    card.addEventListener("click", handleCardClick);
+                    document.getElementById("board").append(card);
+                }
+                board.push(row);
+            }
+            setTimeout(hideAllCards, 1000); // Briefly show cards, then hide
+        }
+
+        function hideAllCards() {
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < columns; c++) {
+                    document.getElementById(`${r}-${c}`).src = "back.jpg"; // Hide all cards
+                }
+            }
+        }
+
+        function handleCardClick() {
+            if (this.src.includes("back")) { // Only allow clicking on hidden cards
+                if (!card1Selected) {
+                    card1Selected = this;
+                    revealCard(card1Selected);
+                } else if (!card2Selected && this !== card1Selected) {
+                    card2Selected = this;
+                    revealCard(card2Selected);
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+
+        function revealCard(card) {
+            let coords = card.id.split("-");
+            let r = parseInt(coords[0]);
+            let c = parseInt(coords[1]);
+            card.src = board[r][c] + ".jpg";
+        }
+
+        function checkMatch() {
+            if (card1Selected.src === card2Selected.src) {
+                // Cards match - increment score
+                score+=10;
+                document.getElementById("score").innerText = score;
+            } else {
+                // Cards do not match - increment errors
+                card1Selected.src = "back.jpg";
+                card2Selected.src = "back.jpg";
+                errors++;
+                document.getElementById("errors").innerText = errors;
+            }
+            card1Selected = null;
+            card2Selected = null;
+        }
+    </script>
+</body>
+</html>
